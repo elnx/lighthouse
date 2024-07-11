@@ -163,6 +163,7 @@ class DatabaseCoverage(object):
         self.nodes = {}
         self.functions = {}
         self.instruction_percent = 0.0
+        self.node_percent = 0.0
 
         # blocks that have not been fully executed (eg, crash / exception)
         self.partial_nodes = set()
@@ -368,6 +369,18 @@ class DatabaseCoverage(object):
 
         # save the computed percentage of database instructions executed (0 to 1.0)
         self.instruction_percent = float(executed) / total
+
+        # sum all the instructions in the database metadata
+        total = sum(f.node_count for f in itervalues(self._metadata.functions))
+        if not total:
+            self.instruction_percent = 0.0
+            return
+
+        # sum the unique instructions executed across all functions
+        executed = sum(f.nodes_executed for f in itervalues(self.functions))
+
+        # save the computed percentage of database instructions executed (0 to 1.0)
+        self.node_percent = float(executed) / total
 
     #--------------------------------------------------------------------------
     # Data Operations

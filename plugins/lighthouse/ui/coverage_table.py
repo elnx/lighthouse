@@ -658,7 +658,7 @@ class CoverageTableController(object):
 
         # build filename for the coverage report based off the coverage name
         name, _ = os.path.splitext(self.lctx.director.coverage_name)
-        filename = name + ".html"
+        filename = name + "_%s_.html" % time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime(os.path.getmtime(self.lctx.director.coverage_name)))
         suggested_filepath = os.path.join(self._last_directory, filename)
 
         # create & configure a Qt File Dialog for immediate use
@@ -700,7 +700,7 @@ class CoverageTableController(object):
 
         # build filename for the coverage report based off the coverage name
         name, _ = os.path.splitext(self.lctx.director.coverage_name)
-        filename = name + ".csv"
+        filename = name + "_%s_.csv" % time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime(os.path.getmtime(self.lctx.director.coverage_name)))
         suggested_filepath = os.path.join(self._last_directory, filename)
 
         # create & configure a Qt File Dialog for immediate use
@@ -1314,6 +1314,7 @@ class CoverageTableModel(QtCore.QAbstractTableModel):
         # summary details
         detail = lambda x,y: '<li><span class="detail">%s:</span> %s</li>' % (x,y)
         database_percent = coverage.instruction_percent*100
+        database_percent2 = coverage.node_percent*100
         table_percent = self.get_modeled_coverage_percent()
         table_percent2 = self.get_modeled_coverage_percent2()
         details = \
@@ -1321,7 +1322,8 @@ class CoverageTableModel(QtCore.QAbstractTableModel):
             detail("Target Binary", metadata.filename),
             detail("Coverage Name", coverage.name),
             detail("Coverage File", coverage.filepath),
-            detail("Database Coverage", "%1.2f%%" % database_percent),
+            detail("Database Instruction Coverage", "%1.2f%%" % database_percent),
+            detail("Database Block Coverage", "%1.2f%%" % database_percent2),
             detail("Table Instruction Coverage", "%1.2f%%" % table_percent),
             detail("Table Block Coverage", "%1.2f%%" % table_percent2),
             detail("Timestamp", time.ctime()),
