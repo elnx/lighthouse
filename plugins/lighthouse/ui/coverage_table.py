@@ -691,6 +691,48 @@ class CoverageTableController(object):
 
         lmsg("Saved HTML report to %s" % filename)
 
+    def export_to_csv(self):
+        """
+        Export the coverage table to a CSV report.
+        """
+        if not self._last_directory:
+            self._last_directory = disassembler[self.lctx].get_database_directory()
+
+        # build filename for the coverage report based off the coverage name
+        name, _ = os.path.splitext(self.lctx.director.coverage_name)
+        filename = name + ".csv"
+        suggested_filepath = os.path.join(self._last_directory, filename)
+
+        # create & configure a Qt File Dialog for immediate use
+        file_dialog = QtWidgets.QFileDialog()
+        file_dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+
+        # we construct kwargs here for cleaner PySide/PyQt5 compatibility
+        kwargs = \
+        {
+            "filter": "CSV Files (*.csv)",
+            "caption": "Save CSV Report",
+        }
+
+        if USING_PYQT5:
+            kwargs["directory"] = suggested_filepath
+        else:
+            kwargs["dir"] = suggested_filepath
+
+        # prompt the user with the file dialog, and await their chosen filename(s)
+        filename, _ = file_dialog.getSaveFileName(**kwargs)
+        if not filename:
+            return
+
+        # remember the last directory we were in (parsed from the saved file)
+        self._last_directory = os.path.dirname(filename) + os.sep
+
+        # write the generated HTML report to disk
+        with open(filename, "w") as fd:
+            fd.write(self._model.to_csv())
+
+        lmsg("Saved CSV report to %s" % filename)
+
     #---------------------------------------------------------------------------
     # Internal
     #---------------------------------------------------------------------------
@@ -1175,6 +1217,44 @@ class CoverageTableModel(QtCore.QAbstractTableModel):
 
         # compute coverage percentage of the visible functions
         return (float(nodes_executed) / (node_count or 1))*100
+
+    #--------------------------------------------------------------------------
+    # CSV Export
+    #--------------------------------------------------------------------------
+
+    def to_csv(self):
+        """
+        Generate a CSV representation of the coverage table.
+        """
+        table_rows = []
+
+        selected_columns = [1, 7, 0]
+
+        # generate the table's column title row
+        header_cells = []
+        for i in selected_columns:
+            header_cells.append(
+                "%s" % self.headerData(i, QtCore.Qt.Horizontal)
+            )
+        table_rows.append(header_cells)
+
+        # generate the table's coverage rows
+        for row in xrange(self.rowCount()):
+            row_cells = []
+            for column in selected_columns:
+                index = self.index(row, column)
+                row_cells.append("%s" % self.data(index))
+            table_rows.append(row_cells)
+
+        # wrap each row of cells, into a CSV table row
+        csv_rows = []
+        for row_cells in table_rows:
+            cell_html = ','.join(row_cells)
+            csv_rows.append("%s" % cell_html)
+
+        table_csv = "\n".join(csv_rows)
+
+        return table_csv
 
     #--------------------------------------------------------------------------
     # HTML Export

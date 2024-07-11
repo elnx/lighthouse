@@ -72,6 +72,10 @@ class TableSettingsMenu(QtWidgets.QMenu):
         self._action_export_html.setToolTip("Export the coverage table to HTML")
         self.addAction(self._action_export_html)
 
+        self._action_export_csv = QtWidgets.QAction("Generate CSV report", None)
+        self._action_export_csv.setToolTip("Export the coverage table to CSV")
+        self.addAction(self._action_export_csv)
+
         self._action_hide_zero = QtWidgets.QAction("Hide 0% coverage", None)
         self._action_hide_zero.setToolTip("Hide table entries with no coverage data")
         self._action_hide_zero.setCheckable(True)
@@ -87,6 +91,7 @@ class TableSettingsMenu(QtWidgets.QMenu):
         self._action_disable_paint.triggered[bool].connect(lambda x: lctx.painter.set_enabled(not x))
         self._action_force_clear.triggered.connect(lctx.painter.force_clear)
         self._action_export_html.triggered.connect(controller.export_to_html)
+        self._action_export_csv.triggered.connect(controller.export_to_csv)
         lctx.painter.status_changed(self._ui_painter_changed_status)
 
     #--------------------------------------------------------------------------
