@@ -2,6 +2,7 @@ import os
 import time
 import string
 import logging
+import re
 from operator import itemgetter, attrgetter
 
 from lighthouse.util import lmsg
@@ -1417,6 +1418,13 @@ class CoverageTableModel(QtCore.QAbstractTableModel):
         #
 
         # loop through *all* the functions as defined in the active metadata
+        if self._search_string.startswith('|') and self._search_string.endswith('|') and len(self._search_string) > 2:
+            try:
+                pattern = re.compile(self._search_string[1:-1])
+            except:
+                pattern = None
+        else:
+            pattern = None
         for function_address in metadata.functions:
 
             #------------------------------------------------------------------
@@ -1427,9 +1435,14 @@ class CoverageTableModel(QtCore.QAbstractTableModel):
             if self._hide_zero and not function_address in coverage.functions:
                 continue
 
-            # OPTIONS: ignore items that do not match the search string
-            if not self._search_string in normalize(metadata.functions[function_address].name):
-                continue
+            # OPTIONS: ignore items that do not match the regex if _search_string is in |...| format
+            if pattern is not None:
+                if not pattern.search(metadata.functions[function_address].name):
+                    continue
+            else:
+                # OPTIONS: ignore items that do not match the search string
+                if not self._search_string in normalize(metadata.functions[function_address].name):
+                    continue
 
             #------------------------------------------------------------------
             # Filters - END
