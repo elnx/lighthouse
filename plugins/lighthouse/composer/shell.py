@@ -85,7 +85,7 @@ class ComposingShell(QtWidgets.QWidget):
         """
 
         # the composer label at the head of the shell
-        self._line_label = QtWidgets.QLabel("Composer")
+        self._line_label = QtWidgets.QLabel("Composer        ")
         self._line_label.setStyleSheet("QLabel { margin: 0 1ex 0 1ex }")
         self._line_label.setAlignment(QtCore.Qt.AlignCenter)
         self._line_label.setFont(self._font)
@@ -400,9 +400,10 @@ class ComposingShell(QtWidgets.QWidget):
 
         # compute coverage % of the visible (filtered) results
         percent = self._table_model.get_modeled_coverage_percent()
+        percent2 = self._table_model.get_modeled_coverage_percent2()
 
         # show the coverage % of the search results in the shell label
-        self._line_label.setText("%1.2f%%" % percent)
+        self._line_label.setText("%1.2f%%/%1.2f%%" % (percent, percent2))
 
     def _highlight_search(self):
         """

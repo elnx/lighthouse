@@ -1148,6 +1148,24 @@ class CoverageTableModel(QtCore.QAbstractTableModel):
 
         # compute coverage percentage of the visible functions
         return (float(instructions_executed) / (instruction_count or 1))*100
+    
+    def get_modeled_coverage_percent2(self):
+        """
+        Get the coverage % represented by the current (visible) model.
+        """
+
+        # sum the # of instructions in all the visible functions
+        node_count = sum(
+            meta.node_count for meta in itervalues(self._visible_metadata)
+        )
+
+        # sum the # of instructions executed in all the visible functions
+        nodes_executed = sum(
+            cov.nodes_executed for cov in itervalues(self._visible_coverage)
+        )
+
+        # compute coverage percentage of the visible functions
+        return (float(nodes_executed) / (node_count or 1))*100
 
     #--------------------------------------------------------------------------
     # HTML Export
