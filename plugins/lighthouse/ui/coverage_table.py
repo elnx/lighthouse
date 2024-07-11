@@ -722,9 +722,10 @@ class CoverageTableModel(QtCore.QAbstractTableModel):
     INST_HIT     = 4
     FUNC_SIZE    = 5
     COMPLEXITY   = 6
+    COV_PERCENT2 = 7
 
     METADATA_ATTRIBUTES = [FUNC_NAME, FUNC_ADDR, FUNC_SIZE, COMPLEXITY]
-    COVERAGE_ATTRIBUTES = [COV_PERCENT, BLOCKS_HIT, INST_HIT]
+    COVERAGE_ATTRIBUTES = [COV_PERCENT, BLOCKS_HIT, INST_HIT, COV_PERCENT2]
 
     # column index -> object attribute mapping
     COLUMN_TO_FIELD = \
@@ -735,7 +736,8 @@ class CoverageTableModel(QtCore.QAbstractTableModel):
         BLOCKS_HIT:   "nodes_executed",
         INST_HIT:     "instructions_executed",
         FUNC_SIZE:    "size",
-        COMPLEXITY:   "cyclomatic_complexity"
+        COMPLEXITY:   "cyclomatic_complexity",
+        COV_PERCENT2: "node_percent",
     }
 
     # column headers of the table
@@ -748,6 +750,7 @@ class CoverageTableModel(QtCore.QAbstractTableModel):
         INST_HIT:     "Instr. Hit",
         FUNC_SIZE:    "Func Size",
         COMPLEXITY:   "CC",
+        COV_PERCENT2: "Cov %",
     }
 
     # column header tooltips
@@ -760,6 +763,7 @@ class CoverageTableModel(QtCore.QAbstractTableModel):
         INST_HIT:     "Number of Instructions Executed",
         FUNC_SIZE:    "Function Size (bytes)",
         COMPLEXITY:   "Cyclomatic Complexity",
+        COV_PERCENT2:  "Coverage Percent2",
     }
 
     # sample column
@@ -772,6 +776,7 @@ class CoverageTableModel(QtCore.QAbstractTableModel):
         " 1000 / 1000 ",
         " 100000 ",
         " 1000 ",
+        " 100.00 ",
     ]
 
     def __init__(self, lctx, parent=None):
@@ -968,6 +973,9 @@ class CoverageTableModel(QtCore.QAbstractTableModel):
         # Cyclomatic Complexity
         elif column == self.COMPLEXITY:
             return "%u" % function_metadata.cyclomatic_complexity
+        
+        elif column == self.COV_PERCENT2:
+            return "%5.2f" % (function_coverage.node_percent*100)
 
         # unhandeled? maybe make this an assert?
         return None
@@ -1226,13 +1234,15 @@ class CoverageTableModel(QtCore.QAbstractTableModel):
         detail = lambda x,y: '<li><span class="detail">%s:</span> %s</li>' % (x,y)
         database_percent = coverage.instruction_percent*100
         table_percent = self.get_modeled_coverage_percent()
+        table_percent2 = self.get_modeled_coverage_percent2()
         details = \
         [
             detail("Target Binary", metadata.filename),
             detail("Coverage Name", coverage.name),
             detail("Coverage File", coverage.filepath),
             detail("Database Coverage", "%1.2f%%" % database_percent),
-            detail("Table Coverage", "%1.2f%%" % table_percent),
+            detail("Table Instruction Coverage", "%1.2f%%" % table_percent),
+            detail("Table Block Coverage", "%1.2f%%" % table_percent2),
             detail("Timestamp", time.ctime()),
         ]
         list_html = "<ul>%s</ul>" % '\n'.join(details)
@@ -1264,7 +1274,7 @@ class CoverageTableModel(QtCore.QAbstractTableModel):
 
         # generate the table's column title row
         header_cells = []
-        for i in xrange(self.columnCount()-1):
+        for i in xrange(self.columnCount()):
             header_cells.append(
                 "<th>%s</th>" % self.headerData(i, QtCore.Qt.Horizontal)
             )
@@ -1273,7 +1283,7 @@ class CoverageTableModel(QtCore.QAbstractTableModel):
         # generate the table's coverage rows
         for row in xrange(self.rowCount()):
             row_cells = []
-            for column in xrange(self.columnCount()-1):
+            for column in xrange(self.columnCount()):
                 index = self.index(row, column)
                 row_cells.append("<td>%s</td>" % self.data(index))
             row_color = self.data(index, QtCore.Qt.BackgroundRole).name()
