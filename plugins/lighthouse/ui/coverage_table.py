@@ -658,7 +658,7 @@ class CoverageTableController(object):
 
         # build filename for the coverage report based off the coverage name
         name, _ = os.path.splitext(self.lctx.director.coverage_name)
-        filename = name + "_%s_.html" % time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime(os.path.getmtime(self.lctx.director.coverage_name)))
+        filename = name + "_%s_.html" % time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime(os.path.getmtime(self.lctx.director.coverage.filepath)))
         suggested_filepath = os.path.join(self._last_directory, filename)
 
         # create & configure a Qt File Dialog for immediate use
