@@ -321,6 +321,7 @@ class LighthouseCore(object):
         # all done! pop the coverage overview to show the user their results
         disassembler.hide_wait_box()
         lmsg("Successfully loaded batch %s..." % batch_name)
+        self.show_tips()
         self.open_coverage_overview(lctx.dctx)
 
         # finally, emit any notable issues that occurred during load
@@ -391,6 +392,7 @@ class LighthouseCore(object):
         # all done! pop the coverage overview to show the user their results
         disassembler.hide_wait_box()
         lmsg("Successfully loaded %u coverage file(s)..." % len(created_coverage))
+        self.show_tips()
         self.open_coverage_overview(lctx.dctx)
 
         # finally, emit any notable issues that occurred during load
@@ -409,3 +411,9 @@ class LighthouseCore(object):
         # kick off the async update check
         check_for_update(self.PLUGIN_VERSION, callback)
         self._update_checked = True
+
+    def show_tips(self) :
+        """
+        Show some tips to facilitate follow-up operations
+        """
+        lmsg("*Tips* use /|^Nt[A-Z][a-zA-Z0-9]+$| to filter out all syscalls")
